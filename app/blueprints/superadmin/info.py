@@ -3,7 +3,7 @@ __author__ = "Nigshoxiz"
 from flask import render_template, abort, request, make_response, redirect, session
 from jinja2 import TemplateNotFound
 
-import sys, os, distro, platform
+import sys, os, platform
 from app import db, app
 from app.controller.global_config import GlobalConfig
 from app.utils import returnModel, get_file_hash
@@ -45,12 +45,14 @@ def get_server_info(uid, priv):
         "memory" : ""
     }
 
-    _model["OS"]["name"]   = platform.system()
+    _model["OS"]["name"] = platform.system()
     memory_GB = virtual_memory().total /1024/1024/1000.0
     _model["memory"] = "%.2f" % memory_GB
-
     # TODO: add windows support
     if sys.platform.startswith("linux"):
+        # this module is only for linux
+        # windows not supported.
+        import distro
         _cpu_model = {
             "vendor" : cpu.info[0].get("vendor_id"),
             "model" : cpu.info[0].get("model name"),

@@ -7,7 +7,7 @@ except getopt.GetoptError as err:
     print(err, file=sys.stderr)
     sys.exit(1)
 
-if platform.system() == "Linux":
+if platform.system() == "Linux" or platform.system() == "Windows":
 
     logfile = "/var/log/ob-panel.log"
     pidfile = ""

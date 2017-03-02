@@ -19,7 +19,7 @@ __author__ = "Nigshoxiz"
 # Nigshoxiz
 # 2016-8-16
 
-import sys, getopt, os
+import sys, getopt, os, platform
 
 def start_chaussette():
     from app import app as _app
@@ -28,10 +28,6 @@ def start_chaussette():
     from app.mq_events import WebsocketEventHandler
     from app.controller.global_config import GlobalConfig
     from app.controller.init_main_db import init_database
-
-    from chaussette.backend import _backends
-    from chaussette.backend._eventlet import Server as eventlet_server
-    from chaussette.server import make_server
 
     _config = read_config_yaml()
     debug = is_debug()
@@ -86,7 +82,11 @@ def start_chaussette():
 
         return app
 
-    def _make_server():
+    def _make_server_linux():
+        from chaussette.backend import _backends
+        from chaussette.backend._eventlet import Server as eventlet_server
+        from chaussette.server import make_server
+
         try:
             # instill eventlet_server instance to `_backends` dict to bypass the restriction!
             _backends['eventlet'] = eventlet_server
@@ -98,6 +98,15 @@ def start_chaussette():
         except KeyboardInterrupt:
             sys.exit(0)
 
+    def _make_server_windows():
+        from tornado.wsgi import WSGIContainer
+        from tornado.httpserver import HTTPServer
+        from tornado.ioloop import IOLoop
+
+        http_server = HTTPServer(WSGIContainer(_app))
+        http_server.listen(port)
+        IOLoop.instance().start()
+
     # init directories
     init_directory()
 
@@ -107,16 +116,19 @@ def start_chaussette():
     # init database
     init_database(logger=logger)
 
-    if use_reloader:
-        try:
-            from werkzeug.serving import run_with_reloader
-        except ImportError:
-            logger.info("Reloader requires Werkzeug: "
-                        "'pip install werkzeug'")
-            sys.exit(0)
-        run_with_reloader(_make_server)
-    else:
-        _make_server()
+    #if use_reloader:
+    #    try:
+    #        from werkzeug.serving import run_with_reloader
+    #    except ImportError:
+    #        logger.info("Reloader requires Werkzeug: "
+    #                    "'pip install werkzeug'")
+    #        sys.exit(0)
+    #    run_with_reloader(_make_server)
+    #else:
+    if platform.system() == "Windows":
+        _make_server_windows()  
+    else: # linux or other systems
+        _make_server_linux()
 
 def start_ftp_manager(**kwargs):
     from ftp_manager import start_FTP_manager
