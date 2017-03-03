@@ -7,7 +7,7 @@ from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 from tornado import websocket
 from tornado.ioloop import IOLoop
 from . import logger
-import socketio, eventlet, json, re, threading, traceback
+import json, re, threading, traceback
 
 class WSConnections():
     instance = None

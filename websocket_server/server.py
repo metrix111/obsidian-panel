@@ -1,5 +1,5 @@
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
-import socketio, eventlet, json, re, zmq, threading, traceback, engineio
+import json, re, zmq, threading, traceback
 from . import logger
 
 from app.utils import read_config_yaml

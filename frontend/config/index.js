@@ -38,10 +38,6 @@ module.exports = {
               target: 'http://localhost:80',
               changeOrigin: true
           },
-          "/ws":{
-              target: 'http://localhost:80',
-              changeOrigin: true
-          },
           "_":{
               rule:["/static/js/**"
                    ],

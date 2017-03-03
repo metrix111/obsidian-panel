@@ -24,6 +24,5 @@ class WS_TAG:
     _TEST_RECV = "_TEST_RECV"
     _TEST_SEND = "_TEST_SEND"
 
-from .status_pool import MessageUserStatusPool
 from .proxy import MessageQueueProxy
 from .event_handler import MessageEventHandler

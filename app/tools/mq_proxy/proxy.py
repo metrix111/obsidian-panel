@@ -2,14 +2,14 @@ __author__ = "Nigshoxiz"
 
 import zmq, inspect, threading, time, zmq, json
 from uuid import uuid4
-from . import SingletonP, WS_TAG, MessageUserStatusPool
+from . import SingletonP, WS_TAG
 from .event_handler import MessageEventHandler
 import traceback
 
 # logging system
 from ob_logger import Logger
 
-logger = Logger("MsgQ", debug=True)
+logger = Logger("MsgQ", debug=False)
 
 class MessageQueueProxy(metaclass=SingletonP):
     '''

@@ -68,36 +68,7 @@ def start_app():
         proxy.register(WebsocketEventHandler)
         proxy.listen(background=True)
 
-    def wrap_socketio_server():
-        import socketio
-        from websocket_server.ws_conn import WSConnections
-
-        mgr = socketio.RedisManager("redis://localhost:%s/0" % redis_port)
-        sio = socketio.Server(client_manager=mgr, async_mode='eventlet')
-
-        #init
-        ws = WSConnections.getInstance(sio)
-        app = socketio.Middleware(sio, _app)
-
-        return app
-
-    def _make_server_linux():
-        from chaussette.backend import _backends
-        from chaussette.backend._eventlet import Server as eventlet_server
-        from chaussette.server import make_server
-
-        try:
-            # instill eventlet_server instance to `_backends` dict to bypass the restriction!
-            _backends['eventlet'] = eventlet_server
-
-            app = wrap_socketio_server()
-            httpd = make_server(app, host=host, port=port, backend='eventlet')
-
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            sys.exit(0)
-
-    def _make_server():
+    def make_server():
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer
         from tornado.ioloop import IOLoop
@@ -129,7 +100,7 @@ def start_app():
     # init database
     init_database(logger=logger)
 
-    _make_server()
+    make_server()
 
 def start_ftp_manager(**kwargs):
     from ftp_manager import start_FTP_manager
@@ -146,15 +117,6 @@ def start_process_watcher(**kwargs):
 def start_task_scheduler(**kwargs):
     from task_scheduler import start_task_scheduler
     start_task_scheduler(**kwargs)
-
-def start_redis(**kwargs):
-    from app.utils import read_config_yaml, is_debug
-
-    _config = read_config_yaml()
-    debug = is_debug()
-
-    redis_port = _config['redis']['listen_port']
-    os.system('redis-server --port %s 1>/dev/null 2>/dev/null' % redis_port)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "b:")
@@ -173,8 +135,7 @@ launch_map = {
     "ftp_manager" : start_ftp_manager,
     "process_watcher" : start_process_watcher,
     "zeromq_broker" : start_zeromq_broker,
-    "task_scheduler" : start_task_scheduler,
-    'redis' : start_redis
+    "task_scheduler" : start_task_scheduler
 }
 
 if launch_map.get(launch_branch_name) != None:
