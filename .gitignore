@@ -4,6 +4,7 @@ _draft.py
 env/
 config.yaml
 .idea/
+.vscode/
 __pycache__/
 app/__pycache__/
 .obsidian_panel.ini
