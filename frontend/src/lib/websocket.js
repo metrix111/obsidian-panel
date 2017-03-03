@@ -44,7 +44,7 @@ class WebSocket {
 
     _init(){
         if(window.WebSocket != undefined){
-            this.socket = new WebSocket("ws://" + this._get_current_host() + "/ws");
+            this.socket = new window.WebSocket("ws://" + window.location.host + "/ws");
             this.socket.onopen = (e) =>{
                 this.connected = true;
             };
@@ -54,10 +54,10 @@ class WebSocket {
             };
 
             this.socket.onmessage = (e)=>{
+                let msg = null;
                 try{
-                    let msg = JSON.parse(e.data);
+                    msg = JSON.parse(e.data);
                 }catch(evt){
-                    console.log(evt);
                     return ;
                 }
                 if(this.socketQueue[msg.flag] != null){
@@ -102,7 +102,7 @@ class WebSocket {
             "props" : props
         };
 
-        this.socket.emit("message", send_json);
+        this.socket.send(JSON.stringify(send_json));
 
         // if callback success is a function
         if(typeof(callback_success) == "function"){

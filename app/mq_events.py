@@ -1,7 +1,7 @@
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy, MessageEventHandler
 from app import db
 
-from websocket_server.ws_conn import WebSocketHandler
+from websocket_server.ws_conn import send_data
 class WebsocketEventHandler(MessageEventHandler):
 
     __prefix__ = "websocket"
@@ -23,8 +23,8 @@ class WebsocketEventHandler(MessageEventHandler):
         if _event == None:
             return None
         # broadcast data to clients
-        ws = WebSocketHandler.getInstance()
-        ws.send_data("message", _values, uid=_uid)
+
+        send_data("message", _values, _uid)
 
     def dw_response(self, flag, values):
         _uid   = values.get("uid")
@@ -37,5 +37,4 @@ class WebsocketEventHandler(MessageEventHandler):
         if values.get("event") == None:
             return None
 
-        ws = WebSocketHandler.getInstance()
-        ws.send_data("message", _values, uid=_uid)
+        send_data("message", _values, _uid)

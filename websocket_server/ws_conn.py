@@ -5,57 +5,36 @@ from app.utils import PRIVILEGES
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 
 from tornado import websocket
+from tornado.ioloop import IOLoop
 from . import logger
 import socketio, eventlet, json, re, threading, traceback
 
-class WebSocketHandler(websocket.WebSocketHandler):
-
+class WSConnections():
     instance = None
 
     @staticmethod
     def getInstance():
-        if WebSocketHandler.instance == None:
-           WebSocketHandler.instance = WebSocketHandler()
-        return WebSocketHandler.instance
+        if WSConnections.instance == None:
+           WSConnections.instance = WSConnections()
+        return WSConnections.instance
 
     def __init__(self):
-        # KEY :  <user_key> = user_{%uid}
-        # VALUE : [<client1>, <client2>, ...]
         self.connections = {}
 
-    def _check_user(self, environment):
+class WebSocketHandler(websocket.WebSocketHandler):
 
-        def _construct_cookie(headers_raw):
-            '''
-            format: ((<key>,<value>), .. )
-            For cookies:
-            ('Cookie', 'A=B; C=D')
-            :param headers_raw:
-            :return:
-            '''
-            cookies = {}
-            _re = "^(.+)=(.+)"
-            for x in range(0, len(headers_raw)):
-                _key , _val = headers_raw[x]
+    def __init__(self, app, request):
+        websocket.WebSocketHandler.__init__(self, app, request)
+        # KEY :  <user_key> = user_{%uid}
+        # VALUE : [<client1>, <client2>, ...]
+        self.connections = WSConnections.getInstance().connections
 
-                if _key.lower() == "cookie":
-                    _cookie_str = _val
-                    _cookie_str_arr = _cookie_str.split(" ")
-                    for _cookie_item in _cookie_str_arr:
-                        r = re.search(_re, _cookie_item)
-                        if r != None:
-                            cookies[r.group(1)] = r.group(2)
-                    break
-            return cookies
+    def _check_user(self, token):
 
-        # after  initialization
-        cookies = _construct_cookie(environment["headers_raw"])
-        _token = cookies.get("session_token")
-
-        if _token == None:
+        if token == None:
             return (None, None)
 
-        user = db.session.query(UserToken).join(Users).filter(UserToken.token == _token).first()
+        user = db.session.query(UserToken).join(Users).filter(UserToken.token == token).first()
         if user is None:
             return (None, None)
         else:
@@ -65,9 +44,8 @@ class WebSocketHandler(websocket.WebSocketHandler):
             return (priv, uid)
 
     def open(self):
-        print(self.get_cookie("session_token"))
-#        priv, uid = self._check_user(environment)
-        priv = None
+        priv, uid = self._check_user(self.get_cookie("session_token"))
+
         # socket is invalid
         if priv == None:
             self.close(reason="privilege invalid!")
@@ -90,21 +68,21 @@ class WebSocketHandler(websocket.WebSocketHandler):
 
         # only root user could operate it
         # TODO extend priv range
-        avail = self.sid_available(self, permission=PRIVILEGES.ROOT_USER)
+        avail = self.client_available(self, permission=PRIVILEGES.ROOT_USER)
 
         if avail == True:
             logger.debug("send <-- event = %s, props = %s" % (_event, _props))
         else:
             logger.debug("reject <-- event = %s, props = %s" % (_event, _props))
 
-    def sid_available(self, sid, permission = None):
+    def client_available(self, client, permission = None):
         if permission == None:
             return True
         else:
             _uid = None
             _priv = None
             for user_key in self.connections:
-                if sid in self.connections.get(user_key):
+                if client in self.connections.get(user_key):
                     _uid = user_key[5:]
                     break
             if _uid == None:
@@ -121,27 +99,26 @@ class WebSocketHandler(websocket.WebSocketHandler):
             else:
                 return True
 
-    def find_uid(self, sid):
-        _uid = None
-        for user_key in self.connections:
-            if sid in self.connections.get(user_key):
-                _uid = user_key[5:]
-                break
-        return _uid
+def send_data(event, data, uid):
+    '''
+    send websocket data to all sessions that belongs to the user
+    '''
+    def _send_data_callback(clients):
+        data_str = json.dumps(data)
+        for client in clients:
+            client.write_message(data_str)
 
-    def send_data(self, event, data, uid = None, sid = None):
-        '''
-        send websocket data to all session that belongs to the user
-        '''
-        if sid != None:
-            logger.debug("send <-- sid = %s, content = %s" % (sid[0:6], data))
-            self.sio.emit(event, data, room=sid, namespace="/")
-        elif uid == None:
-            return None
-        else:
-            user_key = "user_%s" % uid
-            sessions = self.connections.get(user_key)
-            if sessions != None:
-                logger.debug("send[B] <-- uid = %s, content = %s" % (uid, data))
-                for sid in sessions:
-                    self.sio.emit(event, data, room=sid, namespace="/")
+    if uid == None:
+        return None
+
+    user_key = "user_%s" % uid
+    clients = WSConnections.getInstance().connections
+
+    sessions = clients.get(user_key)
+
+    if sessions != None:
+        logger.debug("send[B] <-- uid = %s, content = %s" % (uid, data))
+
+        io_loop = IOLoop.current()
+        if io_loop != None:
+            io_loop.add_callback(_send_data_callback, sessions)

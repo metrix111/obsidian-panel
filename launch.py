@@ -21,7 +21,7 @@ __author__ = "Nigshoxiz"
 
 import sys, getopt, os, platform
 
-def start_chaussette():
+def start_app():
     from app import app as _app
     from app import logger, proxy
     from app.utils import read_config_yaml, is_debug
@@ -129,19 +129,6 @@ def start_chaussette():
     # init database
     init_database(logger=logger)
 
-    #if use_reloader:
-    #    try:
-    #        from werkzeug.serving import run_with_reloader
-    #    except ImportError:
-    #        logger.info("Reloader requires Werkzeug: "
-    #                    "'pip install werkzeug'")
-    #        sys.exit(0)
-    #    run_with_reloader(_make_server)
-    #else:
-    #if platform.system() == "Windows":
-    #    _make_server_windows()
-    #else: # linux or other systems
-    #    _make_server_linux()
     _make_server()
 
 def start_ftp_manager(**kwargs):
@@ -182,7 +169,7 @@ for o, a in opts:
         launch_branch_name = a
 
 launch_map = {
-    "app" : start_chaussette,
+    "app" : start_app,
     "ftp_manager" : start_ftp_manager,
     "process_watcher" : start_process_watcher,
     "zeromq_broker" : start_zeromq_broker,

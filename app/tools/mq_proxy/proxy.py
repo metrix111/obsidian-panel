@@ -9,7 +9,7 @@ import traceback
 # logging system
 from ob_logger import Logger
 
-logger = Logger("MsgQ", debug=False)
+logger = Logger("MsgQ", debug=True)
 
 class MessageQueueProxy(metaclass=SingletonP):
     '''
