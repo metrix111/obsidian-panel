@@ -4,31 +4,24 @@ from app.controller.global_config import GlobalConfig
 from app.utils import PRIVILEGES
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 
+from tornado import websocket
 from . import logger
 import socketio, eventlet, json, re, threading, traceback
 
-class WSConnections(object):
+class WebSocketHandler(websocket.WebSocketHandler):
 
     instance = None
+
     @staticmethod
-    def getInstance(sio=None):
-        if WSConnections.instance == None:
-            WSConnections.instance = WSConnections(sio)
-        _i = WSConnections.instance
-        if sio != None:
-            _i.sio = sio
-        return _i
+    def getInstance():
+        if WebSocketHandler.instance == None:
+           WebSocketHandler.instance = WebSocketHandler()
+        return WebSocketHandler.instance
 
-    def __init__(self, sio):
+    def __init__(self):
         # KEY :  <user_key> = user_{%uid}
-        # VALUE : [<sid1>, <sid2>, ...]
-        self.sio = sio
+        # VALUE : [<client1>, <client2>, ...]
         self.connections = {}
-
-    def init_events(self):
-        self._init_connect_event()
-        self._init_disconnect_event()
-        self._init_message_event()
 
     def _check_user(self, environment):
 
@@ -55,10 +48,6 @@ class WSConnections(object):
                     break
             return cookies
 
-        gc = GlobalConfig.getInstance()
-        if gc.get("init_super_admin") == False:
-            return (1, 0)
-
         # after  initialization
         cookies = _construct_cookie(environment["headers_raw"])
         _token = cookies.get("session_token")
@@ -75,42 +64,38 @@ class WSConnections(object):
 
             return (priv, uid)
 
-    def _init_connect_event(self):
-        @self.sio.on("connect")
-        def on_connect(sid, environment):
-            priv, uid = self._check_user(environment)
-            # socket is invalid
-            if priv == None:
-                self.sio.disconnect(sid, namespace="/")
-            else:
-                user_key = "user_%s" % uid
-                if self.connections.get(user_key) == None:
-                    self.connections[user_key] = []
+    def open(self):
+        print(self.get_cookie("session_token"))
+#        priv, uid = self._check_user(environment)
+        priv = None
+        # socket is invalid
+        if priv == None:
+            self.close(reason="privilege invalid!")
+        else:
+            user_key = "user_%s" % uid
+            if self.connections.get(user_key) == None:
+                self.connections[user_key] = []
 
-                if sid not in self.connections.get(user_key):
-                    self.connections[user_key].append(sid)
+            if self not in self.connections.get(user_key):
+                self.connections[user_key].append(self)
 
-    def _init_disconnect_event(self):
-        @self.sio.on("disconnect", namespace="/")
-        def on_disconnect(sid):
-            for user_key in self.connections:
-                if sid in self.connections.get(user_key):
-                    self.connections.get(user_key).remove(sid)
+    def on_close(self):
+        for user_key in self.connections:
+            if self in self.connections.get(user_key):
+                self.connections.get(user_key).remove(self)
 
-    def _init_message_event(self):
-        @self.sio.on('message', namespace="/")
-        def emit_message(sid, data):
-            _event = data.get("event")
-            _props = data.get("props")
+    def on_message(self, data):
+        _event = data.get("event")
+        _props = data.get("props")
 
-            # only root user could operate it
-            # TODO extend priv range
-            avail = self.sid_available(sid, permission=PRIVILEGES.ROOT_USER)
+        # only root user could operate it
+        # TODO extend priv range
+        avail = self.sid_available(self, permission=PRIVILEGES.ROOT_USER)
 
-            if avail == True:
-                logger.debug("send <-- event = %s, props = %s" % (_event, _props))
-            else:
-                logger.debug("reject <-- event = %s, props = %s" % (_event, _props))
+        if avail == True:
+            logger.debug("send <-- event = %s, props = %s" % (_event, _props))
+        else:
+            logger.debug("reject <-- event = %s, props = %s" % (_event, _props))
 
     def sid_available(self, sid, permission = None):
         if permission == None:

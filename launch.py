@@ -77,7 +77,6 @@ def start_chaussette():
 
         #init
         ws = WSConnections.getInstance(sio)
-        ws.init_events()
         app = socketio.Middleware(sio, _app)
 
         return app
@@ -98,14 +97,28 @@ def start_chaussette():
         except KeyboardInterrupt:
             sys.exit(0)
 
-    def _make_server_windows():
+    def _make_server():
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer
         from tornado.ioloop import IOLoop
+        from tornado.web import FallbackHandler, Application
 
-        http_server = HTTPServer(WSGIContainer(_app))
-        http_server.listen(port)
-        IOLoop.instance().start()
+        from websocket_server.ws_conn import WebSocketHandler
+
+        try:
+            wsgi_app = WSGIContainer(_app)
+            tornado_app = Application(
+                [
+                    ('/ws', WebSocketHandler),
+                    ('.*', FallbackHandler, dict(fallback=wsgi_app)),
+                ]
+            )
+
+            server = HTTPServer(tornado_app)
+            server.listen(port)
+            IOLoop.instance().start()
+        except KeyboardInterrupt:
+            sys.exit(0)
 
     # init directories
     init_directory()
@@ -125,10 +138,11 @@ def start_chaussette():
     #        sys.exit(0)
     #    run_with_reloader(_make_server)
     #else:
-    if platform.system() == "Windows":
-        _make_server_windows()  
-    else: # linux or other systems
-        _make_server_linux()
+    #if platform.system() == "Windows":
+    #    _make_server_windows()
+    #else: # linux or other systems
+    #    _make_server_linux()
+    _make_server()
 
 def start_ftp_manager(**kwargs):
     from ftp_manager import start_FTP_manager

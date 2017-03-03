@@ -2,7 +2,6 @@ from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 import socketio, eventlet, json, re, zmq, threading, traceback, engineio
 from . import logger
 
-from .ws_conn import WSConnections
 from app.utils import read_config_yaml
 
 def start_zeromq_broker():

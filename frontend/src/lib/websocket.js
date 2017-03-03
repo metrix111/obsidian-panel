@@ -8,7 +8,6 @@ const MAX_RETRY = 10;
 // this is a hackable way to make a global
 //window.WS_INSTANCE = null;
 let instance = null;
-let io = require("socket.io-client");
 
 class WebSocket {
     constructor(){
@@ -44,20 +43,23 @@ class WebSocket {
     }
 
     _init(){
-        if(io !== undefined){
-            if(this.socket === null){
-                this.socket = io(this._get_current_host());
-            }
-
-            this.socket.on("connection",(e)=>{
+        if(window.WebSocket != undefined){
+            this.socket = new WebSocket("ws://" + this._get_current_host() + "/ws");
+            this.socket.onopen = (e) =>{
                 this.connected = true;
-            });
+            };
 
-            this.socket.on("disconnect",(e)=>{
-                this.connected = false;
-            });
+            this.socket.onclose = (e)=>{
+                this.connected = close;
+            };
 
-            this.socket.on("message", (msg)=>{
+            this.socket.onmessage = (e)=>{
+                try{
+                    let msg = JSON.parse(e.data);
+                }catch(evt){
+                    console.log(evt);
+                    return ;
+                }
                 if(this.socketQueue[msg.flag] != null){
                     let execFunc = this.socketQueue[msg.flag];
 
@@ -74,7 +76,16 @@ class WebSocket {
                     let execFunc = this.bindEvents[msg.event];
                     execFunc(msg);
                 }
-            });
+            };
+
+            this.socket.onerror = (e)=>{
+                console.log(e);
+            };
+        }else{
+            // fallback for IE9
+            // TODO
+            // Nigshoxiz
+            // 2017-3-3
         }
     }
 
