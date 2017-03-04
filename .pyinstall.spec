@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['launch.py'],
-             pathex=['./env/lib/python3.5/site-packages', './ftp_manager', './process_watcher', './task_scheduler', './websocket_server', './app'],
+             pathex=['./env/lib/python3.5/site-packages','./env/Lib/site-packages','./env/Lib/site-packages/zmq', './ftp_manager', './process_watcher', './task_scheduler', './websocket_server', './app'],
              binaries=[],
              datas=[('VERSION', '.'),('config.yaml.sample', '.')],
-             hiddenimports=['tornado', 'yaml', 'pyftpdlib', 'distro', 'zmq', 'zmq.backend.cython'],
+             hiddenimports=['tornado', 'yaml', 'pyftpdlib', 'distro', 'zmq', 'zmq.backend.cython', 'zmq.backend.cffi'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
