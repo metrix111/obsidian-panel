@@ -4,6 +4,7 @@ _draft.py
 env/
 config.yaml
 .idea/
+.cache/
 .vscode/
 __pycache__/
 app/__pycache__/

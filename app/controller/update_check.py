@@ -2,6 +2,7 @@ from urllib.request import urlopen, Request
 import yaml, subprocess, os, traceback, json
 from datetime import datetime
 from app import logger
+from app.utils import read_config_yaml
 
 class UpdateChecker():
     def __init__(self):
@@ -11,11 +12,9 @@ class UpdateChecker():
         pass
 
     def get_zhao(self):
-        fr = open(os.path.join(os.getcwd(), self.config_file), "r")
-        docs = yaml.load(fr)
-        fr.close()
+        _config = read_config_yaml()
 
-        _zhao = docs.get("global").get("zhao")
+        _zhao = _config.get("global").get("zhao")
         if _zhao == None:
             return 0
         else:

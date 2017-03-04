@@ -42,7 +42,8 @@ def generate_random_string(bits):
 
 # read VERSION
 def get_version():
-    f = open("VERSION", "r")
+    version_file = os.path.normpath(os.path.join(__file__, "..", "..", "VERSION"))
+    f = open(version_file, "r")
     version = f.read()
     return version.strip()
 
@@ -56,7 +57,7 @@ def is_debug():
 
 # read config.yaml
 def read_config_yaml():
-
+    
     def _merge_dict(dict_data, dict_tmpl):
         for item in dict_tmpl:
             if dict_data.get(item) == None:
@@ -71,8 +72,8 @@ def read_config_yaml():
 
         return dict_data
 
-    config_yaml = "config.yaml"
-    config_yaml_sample = "config.yaml.sample"
+    config_yaml = os.path.normpath(os.path.join(__file__, "..", "..", "config.yaml"))
+    config_yaml_sample = os.path.normpath(os.path.join(__file__, "..","..", "config.yaml.sample"))
 
     fsr_docs = None
     fr_docs  = None

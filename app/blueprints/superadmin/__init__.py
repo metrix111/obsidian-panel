@@ -1,5 +1,6 @@
 __author__ = "Nigshoxiz"
-
+# import from app
+from app.utils import get_version 
 # import libs
 from flask import Blueprint
 # logging
@@ -9,12 +10,6 @@ super_admin_page = Blueprint("super_admin_page", __name__,
                              url_prefix="/super_admin")
 
 logger = logging.getLogger("ob_panel")
-
-
-def get_version():
-    f = open("VERSION", "r")
-    version = f.read()
-    return version.strip()
 
 version = get_version()
 

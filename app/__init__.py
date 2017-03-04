@@ -1,6 +1,7 @@
 import os, yaml
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from app.utils import read_config_yaml
 from app.controller.global_config import GlobalConfig
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 
@@ -26,7 +27,8 @@ if gc.get("database_uri") != None:
 db = SQLAlchemy(app)
 
 # read config.yaml directly
-zmq_port = int(yaml.load(open("config.yaml","r")).get("broker").get("listen_port"))
+_config = read_config_yaml()
+zmq_port = _config['broker']['listen_port']
 proxy = MessageQueueProxy(WS_TAG.APP ,router_port=zmq_port)
 
 

@@ -1,5 +1,6 @@
 __author__ = "Nigshoxiz"
 
+from app.utils import get_version
 # import libs
 from flask import Blueprint
 import logging
@@ -9,11 +10,6 @@ server_inst_page = Blueprint("server_inst_page", __name__,
                              url_prefix='/server_inst')
 
 logger = logging.getLogger("ob_panel")
-
-def get_version():
-    f = open("VERSION", "r")
-    version = f.read()
-    return version.strip()
 
 version = get_version()
 # import routes

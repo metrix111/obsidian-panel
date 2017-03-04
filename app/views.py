@@ -1,11 +1,7 @@
 from app import app
+from app.utils import get_version
 from app.controller.global_config import GlobalConfig
 from flask import render_template, redirect, send_file
-
-def get_version():
-    f = open("VERSION", "r")
-    version = f.read()
-    return version.strip()
 
 version = get_version()
 @app.route("/")
