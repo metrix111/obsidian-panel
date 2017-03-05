@@ -31,7 +31,7 @@ if platform.system() == "Linux" or platform.system() == "Windows":
 endpoint = ipc:///tmp/circus.sock
 pubsub_endpoint = ipc:///tmp/circus_pubsub.sock
 '''
-    watchers = ['redis', 'app' , 'ftp_manager', 'process_watcher', 'zeromq_broker', 'task_scheduler']
+    watchers = ['app' , 'ftp_manager', 'process_watcher', 'zeromq_broker', 'task_scheduler']
 
     tmpl = Template('''
 [watcher:$watcher]
