@@ -2,12 +2,10 @@ from urllib.request import urlopen, Request
 import yaml, subprocess, os, traceback, json
 from datetime import datetime
 from app import logger
-from app.utils import read_config_yaml
+from app.utils import read_config_yaml, get_version
 
 class UpdateChecker():
     def __init__(self):
-        self.version_file = "VERSION"
-        self.config_file  = "config.yaml"
         self.zhao = self.get_zhao()
         pass
 
@@ -21,10 +19,7 @@ class UpdateChecker():
             return int(_zhao)
 
     def get_current_version(self):
-        f = open(os.path.join(os.getcwd(), self.version_file), "r")
-        data = f.read()
-        f.close()
-        return data.strip()
+        return get_version()
 
     def check_newest_release(self):
         # use GitHub API

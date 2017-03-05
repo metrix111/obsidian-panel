@@ -3,6 +3,7 @@ from functools import wraps
 
 from app.tools.mq_proxy import MessageQueueProxy, WS_TAG
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from .mq_events import TaskEventHandler
 
@@ -60,17 +61,18 @@ def start_task_scheduler():
         cron     = task_map[task]["cron"].split(" ")
         scheduler.add_job(
             func = task_obj["fn"],
-            trigger = 'cron',
+            trigger = CronTrigger(
+                # cron data
+                year = cron[0],
+                month = cron[1],
+                day = cron[2],
+                week = cron[3],
+                day_of_week = cron[4],
+                hour = cron[5],
+                minute = cron[6],
+                second = cron[7]
+            ),
             kwargs = task_obj["kwargs"],
-            # cron data
-            year = cron[0],
-            month = cron[1],
-            day = cron[2],
-            week = cron[3],
-            day_of_week = cron[4],
-            hour = cron[5],
-            minute = cron[6],
-            second = cron[7]
         )
 
     scheduler.start()

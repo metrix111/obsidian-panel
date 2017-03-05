@@ -1,4 +1,4 @@
-import os, yaml
+import os, yaml, sys
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from app.utils import read_config_yaml
@@ -8,7 +8,11 @@ from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 from ob_logger import Logger
 logger = Logger("APP", debug=True)
 
-app = Flask(__name__)
+if getattr(sys, 'frozen', False):
+    template_folder = os.path.join(sys._MEIPASS, 'templates')
+    app = Flask(__name__, template_folder=template_folder)
+else:
+    app = Flask(__name__)
 
 # shut up, please. I don't wanna see your useless notice again !!
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True

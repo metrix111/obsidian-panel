@@ -9,6 +9,7 @@ from app.tools.mc_downloader import DownloaderPool, sourceJAVA
 from app.tools.mq_proxy import WS_TAG, MessageQueueProxy
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 from datetime import datetime
 import tarfile, subprocess
@@ -247,7 +248,7 @@ class DownloadTaskManager(metaclass=Singleton):
                 if not self.scheduler.running:
                     self.scheduler.start()
 
-                sch_job = self.scheduler.add_job(_schedule_get_progress, 'interval', seconds=1, args=[self, hash])
+                sch_job = self.scheduler.add_job(_schedule_get_progress, trigger=IntervalTrigger(seconds=5), args=[self, hash])
 
                 self.tasks_pool.update(hash, sch_job=sch_job)
                 self.tasks_pool.update(hash, status = _utils.DOWNLOADING)

@@ -22,7 +22,7 @@ def login():
         login_flag = 1
     else:
         login_flag = 0
-    return render_template("/startup/index.html", login_flag = login_flag, version = version)
+    return render_template("startup/index.html", login_flag = login_flag, version = version)
 # proxies
 @app.route("/vendors-%s.js" % version)
 def proxy_vendors_js():
