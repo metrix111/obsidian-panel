@@ -11,7 +11,7 @@
 DIR=$(dirname $([ -L $0 ] && readlink -f $0 || echo $0))
 
 PIDFILE=/var/run/ob-panel.pid
-LOGFILE=/var/log/ob-panel.log
+SUPERVISOR_FILE=/etc/supervisor.d/obsidian-panel.conf
 
 _parse_yaml() {
    local prefix=$2
@@ -29,28 +29,30 @@ _parse_yaml() {
    }'
 }
 
-_start_circus(){
-    echo "[INFO] Start Obsidian Panel LEVEL - 2"
-    python3 $DIR/start-panel.py --pidfile=$PIDFILE --daemon --logfile=$LOGFILE
+_start_supervisord() {
+    if $(supervisord -c $SUPERVISOR_FILE); then
+        echo "success"
+    else
+        echo "fail"
+    fi
 }
 
-cmd_circusctl(){
-    eval $(_parse_yaml $(dirname "$DIR")/config.yaml "config_")
-    circusctl --endpoint=ipc:///tmp/circus.sock --timeout 3 $@
+cmd_supervisorctl(){
+    supervisorctl -c $SUPERVISOR_FILE $@
 }
 
 start(){
     echo "Start obsidian-panel..."
     if [ ! -f $PIDFILE ]; then
-        _start_circus
+        _start_supervisord
     else
         echo "[INFO] Start Obsidian Panel LEVEL - 1"
     fi
-    cmd_circusctl start
+    cmd_supervisorctl start
 }
 
 status(){
-    cmd_circusctl status
+    cmd_supervisorctl status
 }
 
 stop(){
@@ -69,15 +71,19 @@ restart(){
     echo "Restart obsidian-panel..."
     # generate ini file
     if [ ! -f $PIDFILE ]; then
-        _start_circus
+        _start_supervisord
     else
         kill -2 $(cat $PIDFILE)
         rm -f $PIDFILE
-        _start_circus
+        _start_supervisord
     fi
 }
 
 debug(){
+    # waiting for implementation
+    echo "Not implemented yet."
+    exit 1
+
     echo "Running in debug mode..."
     if [ -f $PIDFILE ]; then
         stop
@@ -89,6 +95,11 @@ debug(){
 }
 
 upgrade(){
+
+    # waiting for implementation
+    echo "Not implemented yet."
+    exit 1
+
     eval $(_parse_yaml $(dirname "$DIR")/config.yaml "config_")
 
     echo "[INFO] Update Obsidian-panel..."

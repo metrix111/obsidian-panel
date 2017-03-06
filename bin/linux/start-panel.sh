@@ -66,13 +66,20 @@ generate_supervisord_conf() {
 
     # write supervisor config
     $_SUDO cat >> $CONF_FILE <<- EOF
+[unix_http_server]
+file = /tmp/supervisor.sock
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
+
 [supervisord]
 logfile = /var/run/ob-panel-supervisord.log
 logfile_maxbytes = 50MB
 logfile_backups=10
 loglevel = info
-pidfile = /var/run/supervisord.pid
-nodaemon = true
+pidfile = /var/run/ob-panel.pid
+nodaemon = false
+user=root
 
 [supervisorctl]
 serverurl = unix:///tmp/supervisor.sock
@@ -84,15 +91,14 @@ EOF
         $_SUDO cat >> $CONF_FILE <<- EOF
 [program:$prog]
 command=$(_realpath ./bundle/obsidian-panel) -b $prog
-process_name=ob-panel-$prog
 numprocs=1
-startsecs=15
+startsecs=3
 stopsignal=TERM
 stopwaitsecs=10
 user=root
+redirect_stderr=true
 stdout_logfile=/var/log/ob-panel.log
-stderr_logfile=/var/log/ob-panel.log
-
+serverurl = unix:///tmp/supervisor.sock
 EOF
     done
 }
@@ -110,4 +116,4 @@ _detect_dependency supervisord && install_supervisor
 
 generate_supervisord_conf
 
-$_SUDO supervisord -c /etc/supervisor.d/obsidian-panel.conf
+$_SUDO ob-panel restart

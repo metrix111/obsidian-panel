@@ -1,7 +1,9 @@
 #!/bin/sh
 
+BUNDLE_DIR="ob-panel-linux"
+
 # make sure old build is deleted
-rm -rf ./bundle-linux/ 2>/dev/null
+rm -rf ./$BUNDLE_DIR 2>/dev/null
 cd ..
 rm -r build/ 2>/dev/null
 rm -r dist/ 2>/dev/null
@@ -17,13 +19,15 @@ pyinstaller .pyinstall.spec
 echo_bold "Make Bundle..."
 
 cd bin
-mkdir -p bundle-linux/bundle
-mkdir -p bundle-linux/bundle/app
-mkdir -p bundle-linux/binary
+mkdir -p $BUNDLE_DIR/bundle
+mkdir -p $BUNDLE_DIR/bundle/app
+mkdir -p $BUNDLE_DIR/binary
 
-mv ../dist/launch/* bundle-linux/bundle
-cp -r ../app/templates bundle-linux/bundle
-cp -r ../app/static bundle-linux/bundle/app
+mv ../dist/launch/* $BUNDLE_DIR/bundle
+cp -r ../app/templates $BUNDLE_DIR/bundle
+cp -r ../app/static $BUNDLE_DIR/bundle/app
 
-cp -r linux/ob-panel.sh bundle-linux/binary
-cp -r linux/start-panel.sh bundle-linux
+cp -r linux/ob-panel.sh $BUNDLE_DIR/binary
+cp -r linux/start-panel.sh $BUNDLE_DIR
+
+echo "[success]"

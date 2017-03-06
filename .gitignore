@@ -15,4 +15,5 @@ tests/.cache/
 frontend/node_modules/
 debug.lock
 
-bin/obsidian-panel/
+bin/ob-panel-linux
+bin/ob-panel-windows
