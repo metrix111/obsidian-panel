@@ -1,6 +1,11 @@
 <template lang="html">
     <section class="content">
         <div class="row">
+        <div>添加系统java到数据库中，使得用户可以直接用系统的java命令来启动面板。 <b>请先保证在终端下能直接运行java命令！</b></div>
+        <div>这是一个临时更新，将来可能会取消！</div>
+            <button @click="add_system_java">添加系统java</button> 
+        </div>
+        <div class="row">
             <div class="col-md-6 col-lg-6">
                 <div class="box box-info">
                     <div class="box-header with-border">
@@ -305,6 +310,16 @@ export default {
         on_load_error(data){
             this.status = ERROR;
         },
+
+        add_system_java(){
+            let ws = new WebSocket();
+            ws.ajax("GET", "/super_admin/api/__add_sys_java", (msg)=>{
+                // on 
+                alert("成功添加系统java！");
+            },(code)=>{
+                alert("添加系统java失败！");
+            })
+        }
     },
     mounted() {
         this.aj_load_core_list();

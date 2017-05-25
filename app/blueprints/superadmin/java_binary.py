@@ -122,3 +122,21 @@ def start_download_java(uid, priv):
         _tasks_obj = proxy.send("task.start_download", _v, WS_TAG.TSR, reply=False)
 
         return rtn.success(200)
+
+@super_admin_page.route("/api/__add_sys_java", methods=["GET"])
+@ajax_super_admin_only
+def __add_sys_java(uid, priv):
+    try:
+        # save the version info into the database
+        version_data = JavaBinary(
+            major_version="java",
+            minor_version="java",
+            bin_directory="java",
+            install_time=datetime.now()
+        )
+        db.session.add(version_data)
+        db.session.commit()
+
+        return rtn.success(200)
+    except:
+        return rtn.error(500)
