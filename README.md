@@ -5,6 +5,8 @@ Wanna hosting a Minecraft Server but no handy management panel?
 Come and try it!
 Obsidian-Panel is a totally open-source and free Minecraft server panel that written in pure python.  It offers necessary tools for managing a Minecraft Server!
 
+This Is The BombHost v1 Distribution, A copy of obsidian-panel
+
 想要开服，却发现没有顺手的管理工具？
 
 试试`黑曜石面板`吧！
